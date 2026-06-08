@@ -7,12 +7,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
-/**
- * RocketMQ消息消费者
- * - @ConditionalOnProperty: 条件装配，只有 rocketmq.consumer.enabled=true 时才创建此 Bean
- * - 默认不启用（避免没启动 RocketMQ 时应用无法启动）
- * - 要启用：在 application.yml 中设置 rocketmq.consumer.enabled: true
- */
+// RocketMQ消息消费者
 @Component
 @ConditionalOnProperty(prefix = "rocketmq", name = "consumer.enabled", havingValue = "true", matchIfMissing = false)
 @RocketMQMessageListener(

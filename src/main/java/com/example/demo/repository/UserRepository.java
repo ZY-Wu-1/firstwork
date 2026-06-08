@@ -8,15 +8,11 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
-/**
- * 数据访问层
- * - JpaRepository: 提供基础CRUD
- * - 继承JpaRepository<User, Long>：主键类型为Long
- */
+// 数据访问层
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
 
-    // 按姓名查询 (方法名自动生成SQL)
+    // 按姓名查询
     List<User> findByName(String name);
 
     // 按邮箱查询

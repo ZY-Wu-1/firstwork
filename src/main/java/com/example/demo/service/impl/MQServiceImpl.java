@@ -7,11 +7,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-/**
- * RocketMQ消息生产者实现
- * - RocketMQTemplate: Spring Boot提供的消息发送模板
- * - 负责将消息发送到RocketMQ Broker
- */
+// RocketMQ消息生产者实现
 @Service
 public class MQServiceImpl implements MQService {
 
@@ -30,10 +26,7 @@ public class MQServiceImpl implements MQService {
         rocketMQTemplate.convertAndSend(topic, message);
     }
 
-    /**
-     * 发送带Tag的消息: topic:tag 的格式
-     * Tag可用于消费者过滤消息，只消费指定tag的消息
-     */
+    // 发送带Tag的消息
     @Override
     public void sendMessageWithTag(String topic, String tag, String message) {
         String destination = topic + ":" + tag;

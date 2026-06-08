@@ -5,12 +5,7 @@ import lombok.Data;
 
 import java.time.LocalDateTime;
 
-/**
- * 用户实体类
- * - @Entity: 标记为JPA实体
- * - @Table: 指定数据库表名，name字段建立索引
- * - 索引: 对name字段建立索引，加速查询
- */
+//用户实体类
 @Entity
 @Table(name = "t_user", indexes = {
         @Index(name = "idx_user_name", columnList = "name")

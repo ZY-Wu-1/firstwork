@@ -1,6 +1,6 @@
 package com.example.demo.controller;
 
-import com.example.demo.service.RedisService;
+import com.example.demo.service.RedisService; // 请确保RedisService类存在于该包路径下，或检查包名是否正确
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -11,123 +11,89 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
-/**
- * Redis操作控制器
- * 提供各种Redis数据结构的RESTful操作接口
- */
 @RestController
 @RequestMapping("/redis")
 public class RedisController {
 
     private final RedisService redisService;
-
+    // 依赖注入: 通过@Autowired将RedisService注入
     @Autowired
     public RedisController(RedisService redisService) {
         this.redisService = redisService;
     }
 
-    // ============== String 操作 ==============
-
+    // 设置字符串键值对
     @PostMapping("/string")
     public ResponseEntity<String> setString(@RequestParam String key, @RequestParam String value) {
         redisService.set(key, value);
-        return ResponseEntity.ok("Set OK: " + key + " = " + value);
+        return ResponseEntity.ok("Set successfully");
     }
 
+    // 获取字符串键值对
     @GetMapping("/string")
     public ResponseEntity<String> getString(@RequestParam String key) {
         String value = redisService.get(key);
-        return ResponseEntity.ok(value == null ? "(nil)" : value);
+        return ResponseEntity.ok(value);
     }
 
-    @PostMapping("/string/expire")
-    public ResponseEntity<String> setStringWithExpire(@RequestParam String key,
-                                                       @RequestParam String value,
-                                                       @RequestParam long seconds) {
-        redisService.setWithExpire(key, value, seconds);
-        return ResponseEntity.ok("Set OK, expire: " + seconds + "s");
-    }
-
-    @DeleteMapping("/string")
-    public ResponseEntity<String> deleteKey(@RequestParam String key) {
-        redisService.delete(key);
-        return ResponseEntity.ok("Deleted: " + key);
-    }
-
-    @PostMapping("/incr")
-    public ResponseEntity<String> increment(@RequestParam String key) {
-        redisService.increment(key);
-        return ResponseEntity.ok("Increment OK: " + key);
-    }
-
-    // ============== Hash 操作 ==============
-
+    // 设置哈希键值对
     @PostMapping("/hash")
-    public ResponseEntity<String> setHash(@RequestParam String key,
-                                           @RequestParam String field,
-                                           @RequestParam String value) {
+    public ResponseEntity<String> setHash(@RequestParam String key, @RequestParam String field, @RequestParam String value) {
         redisService.hset(key, field, value);
-        return ResponseEntity.ok("HSET OK: " + key + "." + field + " = " + value);
+        return ResponseEntity.ok("Hash set successfully");
     }
 
+    // 获取哈希键值对
     @GetMapping("/hash")
     public ResponseEntity<Map<String, String>> getHash(@RequestParam String key) {
-        return ResponseEntity.ok(redisService.hgetAll(key));
+        Map<String, String> hash = redisService.hgetAll(key);
+        return ResponseEntity.ok(hash);
     }
 
-    // ============== List 操作 ==============
-
+    // 设置列表键值对
     @PostMapping("/list")
     public ResponseEntity<String> pushList(@RequestParam String key, @RequestParam String value) {
         redisService.lpush(key, value);
-        return ResponseEntity.ok("LPUSH OK: " + key);
+        return ResponseEntity.ok("List push successfully");
     }
 
+    // 获取列表键值对
     @GetMapping("/list")
     public ResponseEntity<List<String>> getList(@RequestParam String key) {
-        return ResponseEntity.ok(redisService.lrange(key, 0, -1));
+        List<String> list = redisService.lrange(key, 0, -1);
+        return ResponseEntity.ok(list);
     }
 
-    // ============== Set 操作 ==============
-
+    // 设置集合键值对
     @PostMapping("/set")
     public ResponseEntity<String> addSet(@RequestParam String key, @RequestParam String value) {
         redisService.sadd(key, value);
-        return ResponseEntity.ok("SADD OK: " + key);
+        return ResponseEntity.ok("Set add successfully");
     }
 
+    // 获取集合键值对
     @GetMapping("/set")
     public ResponseEntity<Set<String>> getSet(@RequestParam String key) {
-        return ResponseEntity.ok(redisService.smembers(key));
+        Set<String> set = redisService.smembers(key);
+        return ResponseEntity.ok(set);
     }
 
-    // ============== 分布式锁 ==============
-
-    /**
-     * 尝试获取分布式锁
-     * 每个请求都会生成一个唯一的requestId作为锁标识
-     */
+    // 尝试获取分布式锁
     @PostMapping("/lock")
-    public ResponseEntity<Map<String, Object>> tryLock(@RequestParam String lockKey,
-                                                       @RequestParam(defaultValue = "30") long seconds) {
+    public ResponseEntity<Map<String, Object>> tryLock(@RequestParam String lockKey) {
         String requestId = UUID.randomUUID().toString();
-        boolean locked = redisService.tryLock(lockKey, requestId, seconds);
-
+        boolean locked = redisService.tryLock(lockKey, requestId, 30);
+        
         Map<String, Object> result = new HashMap<>();
         result.put("locked", locked);
         result.put("requestId", requestId);
-        result.put("lockKey", lockKey);
-        result.put("msg", locked ? "获取锁成功" : "获取锁失败，已被占用");
         return ResponseEntity.ok(result);
     }
 
-    /**
-     * 释放分布式锁（需要获取锁时返回的requestId）
-     */
-    @PostMapping("/unlock")
-    public ResponseEntity<String> releaseLock(@RequestParam String lockKey,
-                                               @RequestParam String requestId) {
+    // 释放分布式锁
+    @PostMapping("/lock/release")
+    public ResponseEntity<String> releaseLock(@RequestParam String lockKey, @RequestParam String requestId) {
         redisService.releaseLock(lockKey, requestId);
-        return ResponseEntity.ok("释放锁请求完成: " + lockKey);
+        return ResponseEntity.ok("Lock released");
     }
 }

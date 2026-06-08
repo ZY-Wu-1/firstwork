@@ -11,12 +11,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-/**
- * Redis服务实现类
- * - RedisTemplate: Spring提供的Redis操作模板
- * - 支持多种数据结构: String(opsForValue), Hash(opsForHash),
- *   List(opsForList), Set(opsForSet)
- */
+// Redis服务实现类
 @Service
 public class RedisServiceImpl implements RedisService {
 
@@ -27,7 +22,6 @@ public class RedisServiceImpl implements RedisService {
         this.redisTemplate = redisTemplate;
     }
 
-    // ============== String 结构 ==============
 
     @Override
     public void set(String key, String value) {
@@ -39,6 +33,7 @@ public class RedisServiceImpl implements RedisService {
         return redisTemplate.opsForValue().get(key);
     }
 
+    // 设置带过期时间的键值对
     @Override
     public void setWithExpire(String key, String value, long seconds) {
         redisTemplate.opsForValue().set(key, value, seconds, TimeUnit.SECONDS);
@@ -59,7 +54,6 @@ public class RedisServiceImpl implements RedisService {
         redisTemplate.opsForValue().increment(key);
     }
 
-    // ============== Hash 结构 ==============
 
     @Override
     public void hset(String key, String field, String value) {
@@ -81,7 +75,7 @@ public class RedisServiceImpl implements RedisService {
         return result;
     }
 
-    // ============== List 结构 ==============
+    // List 结构
 
     @Override
     public void lpush(String key, String value) {
@@ -98,7 +92,7 @@ public class RedisServiceImpl implements RedisService {
         return redisTemplate.opsForList().range(key, start, end);
     }
 
-    // ============== Set 结构 ==============
+    // Set 结构
 
     @Override
     public void sadd(String key, String value) {
@@ -115,15 +109,7 @@ public class RedisServiceImpl implements RedisService {
         return Boolean.TRUE.equals(redisTemplate.opsForSet().isMember(key, value));
     }
 
-    // ============== 分布式锁 ==============
-
-    /**
-     * 分布式锁实现原理:
-     * - 利用Redis的 SET NX EX (SET if Not eXists + EXpire) 原子特性
-     * - setIfAbsent: 仅当key不存在时才设置成功 (获取锁)
-     * - 同时设置过期时间: 防止死锁(即使服务崩溃也能自动释放)
-     * - requestId: 标识锁的持有者，只有加锁者才能释放此锁
-     */
+    //分布式锁
     @Override
     public boolean tryLock(String lockKey, String requestId, long expireTime) {
         Boolean result = redisTemplate.opsForValue()
@@ -131,11 +117,7 @@ public class RedisServiceImpl implements RedisService {
         return Boolean.TRUE.equals(result);
     }
 
-    /**
-     * 释放分布式锁:
-     * - 校验requestId是否匹配 (防止误删他人的锁)
-     * - 匹配则删除key释放锁
-     */
+    // 释放分布式锁
     @Override
     public void releaseLock(String lockKey, String requestId) {
         String value = redisTemplate.opsForValue().get(lockKey);

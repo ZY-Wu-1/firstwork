@@ -10,18 +10,11 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Optional;
 
-/**
- * 用户服务实现类
- * - @Service: 标记为Spring服务Bean，交由Spring容器管理（依赖注入）
- * - @Transactional: 声明式事务管理
- */
+// 用户服务实现类
 @Service
 public class UserServiceImpl implements UserService {
 
-    /**
-     * 依赖注入: 通过@Autowired将UserRepository注入
-     * 构造方法注入（推荐方式）
-     */
+    // 依赖注入: 通过@Autowired将UserRepository注入
     private final UserRepository userRepository;
 
     @Autowired
@@ -35,10 +28,7 @@ public class UserServiceImpl implements UserService {
         return userRepository.save(user);
     }
 
-    /**
-     * 批量保存 - 演示事务特性:
-     * 如果中途抛异常，所有已保存的数据都会回滚
-     */
+    // 批量保存用户,如果中途抛异常，所有已保存数据都会回滚
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void batchSave(List<User> users) {
@@ -47,18 +37,21 @@ public class UserServiceImpl implements UserService {
         }
     }
 
+    // 根据ID查询用户
     @Override
     @Transactional(readOnly = true)
     public Optional<User> findById(Long id) {
         return userRepository.findById(id);
     }
 
+    // 查询全部用户
     @Override
     @Transactional(readOnly = true)
     public List<User> findAll() {
         return userRepository.findAll();
     }
 
+    // 按姓名查询用户
     @Override
     @Transactional(readOnly = true)
     public List<User> findByName(String name) {
